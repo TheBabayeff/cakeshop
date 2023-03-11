@@ -33,6 +33,7 @@ class ProductRequest extends FormRequest
                 return [
                     'category_id'  => ['required', 'integer'],
                     'name'        => ['required', 'string', 'max:100', Rule::unique('products', 'name')],
+                    'slug'        => ['required', 'string', 'max:100', Rule::unique('products', 'slug')],
                     'code'         => ['required', 'string', 'max:100', Rule::unique('products', 'code')],
                     'description' => ['nullable', 'string', 'max:500'],
                     'price'       => ['required', 'numeric', 'min:0'],
@@ -44,6 +45,7 @@ class ProductRequest extends FormRequest
                 return [
                     'category_id'  => ['required', 'integer'],
                     'name'        => ['required', 'string', 'max:100', Rule::unique('products', 'name')->ignore($this->product->id)],
+                    'slug'        => ['required', 'string', 'max:100', Rule::unique('products', 'slug')->ignore($this->product->id)],
                     'code'         => ['required', 'string', 'max:100', Rule::unique('products', 'code')->ignore($this->product->id)],
                     'description' => ['nullable', 'string', 'max:500'],
                     'price'       => ['required', 'numeric', 'min:0'],

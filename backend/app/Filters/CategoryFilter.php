@@ -14,5 +14,5 @@ class CategoryFilter extends Filter
     public $searchRelations = [];
 
 
-    public $searchColumns = ['name', 'description'];
+    public $searchColumns = ['name', 'slug', 'description'];
 }

@@ -30,6 +30,7 @@ class CategoryRequest extends FormRequest
             case 'POST': {
                 return [
                     'name'        => ['required', 'string', 'max:100', Rule::unique('categories', 'name')],
+                    'slug'        => ['required', 'string', 'max:100', Rule::unique('categories', 'slug')],
                     'description' => ['nullable', 'string', 'max:500'],
                     'image'       => ['required', 'max:5120', 'mimes:png,jpg'],
                 ];
@@ -38,6 +39,7 @@ class CategoryRequest extends FormRequest
             case 'PATCH': {
                 return [
                     'name'        => ['required', 'string', 'max:100', Rule::unique('categories', 'name')->ignore($this->category->id)],
+                    'slug'        => ['required', 'string', 'max:100', Rule::unique('categories', 'slug')->ignore($this->category->id)],
                     'description' => ['nullable', 'string', 'max:500'],
                     'image'       => ['sometimes', 'max:5120', 'mimes:png,jpg'],
                 ];

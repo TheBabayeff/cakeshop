@@ -26,7 +26,7 @@ class Product extends Model implements HasMedia
      *
      * @var string[]
      */
-    protected $fillable = ['category_id', 'name', 'code', 'description', 'price', ];
+    protected $fillable = ['category_id', 'name', 'code', 'slug' ,'description', 'price', ];
 
     /**
      * The accessors to append to the model's array form.

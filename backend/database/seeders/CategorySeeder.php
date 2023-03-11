@@ -14,6 +14,7 @@ class CategorySeeder extends Seeder
         DB::transaction(function () {
             $birthdayCake = Category::updateOrCreate(
                 ['name' => 'Ad günü'],
+                ['slug' => 'ad-gunu'],
                 [
                     'description' => 'Ad günü tortları'
                 ]
@@ -25,6 +26,7 @@ class CategorySeeder extends Seeder
         DB::transaction(function () {
             $babycake = Category::updateOrCreate(
                 ['name' => 'Uşaq tortları'],
+                ['slug' => 'ushaq-tortlari'],
                 [
                     'description' => 'Uşaqlar üçün olan tortlar'
                 ]
@@ -36,6 +38,7 @@ class CategorySeeder extends Seeder
         DB::transaction(function () {
             $weddingCake = Category::updateOrCreate(
                 ['name' => 'Toy torları'],
+                ['slug' => 'toy-torlari'],
                 [
                     'description' => 'Uşaqlar üçün olan tortlar'
                 ]
@@ -47,6 +50,7 @@ class CategorySeeder extends Seeder
         DB::transaction(function () {
             $cupCake = Category::updateOrCreate(
                 ['name' => 'CupCake'],
+                ['slug' => 'cupcake'],
                 [
                     'description' => 'Uşaqlar üçün olan tortlar'
                 ]

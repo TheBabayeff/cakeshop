@@ -17,11 +17,14 @@ class ProductFactory extends Factory
      *
      * @return array<string, mixed>
      */
-    public function definition(): array
+    public function definition()
     {
+        $name = Str::title($this->faker->word()) . " " . Str::title($this->faker->word());
+        $slug = Str::slug($name, '-');
         return [
             'category_id'  => $this->faker->randomElement(Category::pluck('id')->toArray()),
-            'name'         => Str::title($this->faker->word()) . " " . Str::title($this->faker->word()),
+            'name'         => $name,
+            'slug'         => $slug,
             'code'          => "Code " . $this->faker->randomNumber(4),
             'price'        => $this->faker->numberBetween(1, 100) * 10,
             'description'  => $this->faker->paragraph,

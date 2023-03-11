@@ -19,7 +19,7 @@ class ProductFilter extends Filter
      *
      * @var array
      */
-    public $searchColumns = ['id', 'name', 'price'];
+    public $searchColumns = ['id', 'name', 'slug', 'price'];
 
     /**
      * Category filter
