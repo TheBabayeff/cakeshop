@@ -11,7 +11,10 @@ use Filament\Resources\Form;
 use Filament\Resources\Resource;
 use Filament\Resources\Table;
 use Filament\Tables;
+use Filament\Tables\Columns\BadgeColumn;
+use Filament\Forms\Components\TextInput;
 use Filament\Tables\Columns\SpatieMediaLibraryImageColumn;
+use Filament\Tables\Columns\TextColumn;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
@@ -31,7 +34,9 @@ class OrderResource extends Resource
                     ->label('Müştəri adı')
                     ->searchable()
                     ->placeholder('Müştərini Seçin'),
-                Forms\Components\TextInput::make('total')
+
+                TextInput::make('total')
+                    ->label('Sifarişin Qiyməti')
                     ->placeholder('Sifarişin qiymətini yazın ₼')
                     ->required(),
                 Forms\Components\Select::make('status')
@@ -43,17 +48,20 @@ class OrderResource extends Resource
                     ])
                     ->placeholder('Sifarişin statusunu seçin'),
 
-                Forms\Components\TextInput::make('beh')
+                TextInput::make('beh')
                     ->placeholder('Beh verilibsə qeyd edin ₼'),
 
                 Forms\Components\DatePicker::make('date')
                     ->placeholder('Sifarişin Tarixini seçin')
                     ->required(),
+
                 Forms\Components\TimePicker::make('time')
                     ->withoutSeconds()
                     ->placeholder('Sifarişin Saatını seçin')
                     ->required(),
-                SpatieMediaLibraryFileUpload::make('image')->collection('order-photo')
+
+                SpatieMediaLibraryFileUpload::make('image')
+                    ->collection('order-photo')
                     ->multiple(),
 
                 Forms\Components\Textarea::make('description')
@@ -65,35 +73,34 @@ class OrderResource extends Resource
     {
         return $table
             ->columns([
-                //SpatieMediaLibraryImageColumn::make('image')->collection('order-photo'),
-                Tables\Columns\TextColumn::make('id')
-                    ->label('Sifariş kodu')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('customer.name')
-                    ->label('Müştəri adı')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('customer.phone')
-                    ->label('Əlaqə')
-                    ->searchable(),
-                Tables\Columns\BadgeColumn::make('status')
-                    ->label('Statusu')
-                    ->colors([
-                        'primary' => 'approved',
-                        'secondary' => 'pending',
-                        'warning' => 'rejected',
-                        'success' => 'approved',
-                        'danger' => 'canceled',
-                    ])->sortable(),
-                Tables\Columns\TextColumn::make('date')
+                TextColumn::make('date')
                     ->label('Tarix')
                     ->date(),
-
-
-
+                TextColumn::make('customer.name')
+                    ->label('Müştəri adı')
+                    ->searchable(),
+                Tables\Columns\SelectColumn::make('status')
+                    ->label('Statusu')
+                    ->options([
+                        'approved' => 'approved',
+                        'pending' => 'pending',
+                        'rejected' => 'rejected',
+                        'canceled' => 'canceled',
+                    ])->sortable(),
+                TextColumn::make('id')
+                    ->label('Sifariş kodu')
+                    ->searchable(),
+                TextColumn::make('created_at')
+                    ->label('Sifarişin tarixi')
+                    ->searchable(),
+                TextColumn::make('updated_at')
+                    ->label('Dəyişmə vaxtı')
+                    ->searchable(),
+                TextColumn::make('customer.phone')
+                    ->label('Əlaqə')
+                    ->searchable(),
             ])
             ->filters([
-                //Tables\Filters\TrashedFilter::make(),
-
                 Tables\Filters\SelectFilter::make('status')
                     ->options([
                         'pending' => 'Pending',
@@ -133,7 +140,7 @@ class OrderResource extends Resource
     {
         return parent::getEloquentQuery()
             //->where('status', 'pending')
-            ->orderBy('date', 'ASC')
+            ->orderBy('created_at', 'DESC')
             ->withoutGlobalScopes([
                 SoftDeletingScope::class,
             ]);
@@ -141,9 +148,5 @@ class OrderResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Sifarişlər';
 
-    public function isTableRecordSelectable(): ?Closure
-    {
-        return fn (Model $record): bool => $record->status === Status::Enabled;
-    }
 
 }

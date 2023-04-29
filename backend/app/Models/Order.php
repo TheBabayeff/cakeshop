@@ -14,6 +14,11 @@ class Order extends Model implements HasMedia
     protected $fillable = ['customer_id', 'beh', 'date', 'time', 'total', 'status', 'description'];
 
 
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('order-photo');
+    }
+
     public function customer()
     {
         return $this->belongsTo(Customer::class);

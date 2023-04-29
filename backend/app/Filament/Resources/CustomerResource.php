@@ -42,8 +42,9 @@ class CustomerResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name'),
-                Tables\Columns\TextColumn::make('phone'),
+                Tables\Columns\TextColumn::make('name')->searchable(),
+                //Tables\Columns\TextColumn::make('phone')->count('orders'),
+                Tables\Columns\TextColumn::make('phone')->searchable(),
             ])
             ->filters([
                 Tables\Filters\TrashedFilter::make(),
@@ -79,6 +80,7 @@ class CustomerResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
+            ->orderBy('created_at', 'DESC')
             ->withoutGlobalScopes([
                 SoftDeletingScope::class,
             ]);
