@@ -8,6 +8,7 @@ use Closure;
 use Filament\Forms\Components\DatePicker;
 use Filament\Tables;
 use Filament\Tables\Columns\BadgeColumn;
+use Filament\Tables\Columns\SpatieMediaLibraryImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Widgets\StatsOverviewWidget\Card;
@@ -20,6 +21,8 @@ class PendingOrders extends BaseWidget
     //protected static ?string $pluralWidgetLabel = 'Gözləyən Sifarişlər';
 
     protected int|string|array $columnSpan = 'full';
+
+
     protected function getTableActions(): array
     {
         return [
@@ -38,20 +41,13 @@ class PendingOrders extends BaseWidget
     {
 
         return [
+            SpatieMediaLibraryImageColumn::make('Şəkil')->collection('order-photo'),
             TextColumn::make('date')
                 ->label('Tarix')
-                ->date(),
+                ->date('d-M'),
             TextColumn::make('customer.name')
                 ->label('Müştəri adı')
                 ->searchable(),
-            Tables\Columns\SelectColumn::make('status')
-                ->label('Statusu')
-                ->options([
-                    'approved' => 'approved',
-                    'pending' => 'pending',
-                    'rejected' => 'rejected',
-                    'canceled' => 'canceled',
-                ])->sortable(),
             TextColumn::make('id')
                 ->label('Sifariş kodu')
                 ->searchable(),
@@ -59,7 +55,6 @@ class PendingOrders extends BaseWidget
             TextColumn::make('customer.phone')
                 ->label('Əlaqə')
                 ->searchable(),
-
         ];
     }
 

@@ -92,10 +92,12 @@ class OrderResource extends Resource
                     ->searchable(),
                 TextColumn::make('created_at')
                     ->label('Sifarişin tarixi')
-                    ->searchable(),
+                    ->dateTime('d-M-Y h:m')
+                    ->sortable(),
                 TextColumn::make('updated_at')
                     ->label('Dəyişmə vaxtı')
-                    ->searchable(),
+                    ->dateTime('d-M h:m')
+                    ->sortable(),
                 TextColumn::make('customer.phone')
                     ->label('Əlaqə')
                     ->searchable(),
@@ -107,7 +109,8 @@ class OrderResource extends Resource
                         'approved' => 'Approved',
                         'rejected' => 'Rejected',
                         'canceled' => 'Canceled',
-                    ])
+                    ]),
+
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
