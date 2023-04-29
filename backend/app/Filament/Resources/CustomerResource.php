@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class CustomerResource extends Resource
 {
+
     protected static ?string $model = Customer::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-collection';
@@ -43,10 +44,6 @@ class CustomerResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('name'),
                 Tables\Columns\TextColumn::make('phone'),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime(),
-                Tables\Columns\TextColumn::make('updated_at')
-                    ->dateTime(),
             ])
             ->filters([
                 Tables\Filters\TrashedFilter::make(),
@@ -63,10 +60,12 @@ class CustomerResource extends Resource
 
     public static function getRelations(): array
     {
+
         return [
-            //
+            RelationManagers\OrdersRelationManager::class,
         ];
     }
+
 
     public static function getPages(): array
     {
@@ -84,4 +83,9 @@ class CustomerResource extends Resource
                 SoftDeletingScope::class,
             ]);
     }
+
+    protected static ?string $pluralModelLabel = 'Müştərilər';
+
+
+
 }

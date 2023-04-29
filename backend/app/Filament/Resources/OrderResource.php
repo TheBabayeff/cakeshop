@@ -17,6 +17,7 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class OrderResource extends Resource
 {
+
     protected static ?string $model = Order::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-collection';
@@ -26,8 +27,9 @@ class OrderResource extends Resource
         return $form
             ->schema([
                 Forms\Components\BelongsToSelect::make('customer_id')
-
-                ->relationship('customer', 'name')->searchable()
+                ->relationship('customer', 'name')
+                    ->label('Müştəri adı')
+                    ->searchable()
                     ->placeholder('Müştərini Seçin'),
                 Forms\Components\TextInput::make('total')
                     ->placeholder('Sifarişin qiymətini yazın ₼')
@@ -64,29 +66,46 @@ class OrderResource extends Resource
         return $table
             ->columns([
                 //SpatieMediaLibraryImageColumn::make('image')->collection('order-photo'),
-                Tables\Columns\TextColumn::make('customer.name')->searchable(),
-                Tables\Columns\TextColumn::make('customer.phone')->searchable(),
-                Tables\Columns\TextColumn::make('name'),
-                Tables\Columns\TextColumn::make('total'),
+                Tables\Columns\TextColumn::make('id')
+                    ->label('Sifariş kodu')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('customer.name')
+                    ->label('Müştəri adı')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('customer.phone')
+                    ->label('Əlaqə')
+                    ->searchable(),
                 Tables\Columns\BadgeColumn::make('status')
+                    ->label('Statusu')
                     ->colors([
                         'primary' => 'approved',
                         'secondary' => 'pending',
                         'warning' => 'rejected',
                         'success' => 'approved',
                         'danger' => 'canceled',
-                    ]),
-                Tables\Columns\TextColumn::make('date')->date(),
+                    ])->sortable(),
+                Tables\Columns\TextColumn::make('date')
+                    ->label('Tarix')
+                    ->date(),
 
 
 
             ])
             ->filters([
-                Tables\Filters\TrashedFilter::make(),
+                //Tables\Filters\TrashedFilter::make(),
+
+                Tables\Filters\SelectFilter::make('status')
+                    ->options([
+                        'pending' => 'Pending',
+                        'approved' => 'Approved',
+                        'rejected' => 'Rejected',
+                        'canceled' => 'Canceled',
+                    ])
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
             ])
+
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make(),
                 Tables\Actions\ForceDeleteBulkAction::make(),
@@ -113,8 +132,18 @@ class OrderResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
+            //->where('status', 'pending')
+            ->orderBy('date', 'ASC')
             ->withoutGlobalScopes([
                 SoftDeletingScope::class,
             ]);
     }
+
+    protected static ?string $pluralModelLabel = 'Sifarişlər';
+
+    public function isTableRecordSelectable(): ?Closure
+    {
+        return fn (Model $record): bool => $record->status === Status::Enabled;
+    }
+
 }

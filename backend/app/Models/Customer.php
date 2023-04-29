@@ -10,8 +10,15 @@ class Customer extends Model
 {
     use HasFactory, SoftDeletes;
 
+
+
     protected $fillable = [
         'name',
         'phone',
     ];
+
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
+    }
 }
