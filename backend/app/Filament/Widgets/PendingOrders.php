@@ -2,7 +2,9 @@
 
 namespace App\Filament\Widgets;
 
+use App\Filament\Resources\CustomerResource;
 use App\Filament\Resources\CustomerResource\RelationManagers\OrdersRelationManager;
+use App\Models\Customer;
 use App\Models\Order;
 use Closure;
 use Filament\Forms\Components\DatePicker;
@@ -23,6 +25,7 @@ class PendingOrders extends BaseWidget
     protected int|string|array $columnSpan = 'full';
 
 
+
     protected function getTableActions(): array
     {
         return [
@@ -33,6 +36,7 @@ class PendingOrders extends BaseWidget
 
     protected function getTableQuery(): Builder
     {
+
         return Order::query()->where('status', 'pending')
             ->orderBy('date', 'ASC');
     }
@@ -48,9 +52,19 @@ class PendingOrders extends BaseWidget
             TextColumn::make('customer.name')
                 ->label('Müştəri adı')
                 ->searchable(),
+            Tables\Columns\SelectColumn::make('status')
+                ->label('Statusu')
+                ->options([
+                    'approved' => 'approved',
+                    'pending' => 'pending',
+                    'rejected' => 'rejected',
+                    'canceled' => 'canceled',
+                ])
+                ->sortable(),
             TextColumn::make('id')
                 ->label('Sifariş kodu')
-                ->searchable(),
+                ->searchable()
+                ->url(fn(Order $record): string => route('filament.resources.orders.edit', $record)),
 
             TextColumn::make('customer.phone')
                 ->label('Əlaqə')
@@ -80,6 +94,7 @@ class PendingOrders extends BaseWidget
                 })
         ];
     }
+
 
 
 

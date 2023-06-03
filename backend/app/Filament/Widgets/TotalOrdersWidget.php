@@ -21,21 +21,13 @@ class TotalOrdersWidget extends BaseWidget
 
     protected function getCards(): array
     {
-        if (User::where('is_admin' , true)){
             return [
-                Card::make('Sifarişlər', Order::count() ),
+                Card::make('Sifarişlər', Order::count()),
                 Card::make('Ümumi Müştəri', Customer::count()),
                 Card::make('Gözləyən Sifariş', Order::where('status', 'pending')->count()),
                 Card::make('Bu günə olan sifariş', Order::where('date', Carbon::today())->count()),
+                Card::make('Bu Ay üçün olan sifariş', Order::where('date', Carbon::shouldOverflowMonths())->count()),
             ];
-        }
-        return [
-
-            //Card::make('Cəmi Sifariş', Order::count()),
-            Card::make('Gözləyən Sifariş', Order::where('status', 'pending')->count()),
-            Card::make('Bu günə olan sifariş', Order::whereDate('date', today())->count()),
-
-        ];
     }
 
 

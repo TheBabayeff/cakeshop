@@ -4,9 +4,12 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\OrderResource\Pages;
 use App\Filament\Resources\OrderResource\RelationManagers;
+use App\Filament\Resources\OrderResource\Widgets\TotalOrdersWidget;
 use App\Models\Order;
 use Filament\Forms;
+use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
+use Filament\Notifications\Notification;
 use Filament\Resources\Form;
 use Filament\Resources\Resource;
 use Filament\Resources\Table;
@@ -15,8 +18,11 @@ use Filament\Tables\Columns\BadgeColumn;
 use Filament\Forms\Components\TextInput;
 use Filament\Tables\Columns\SpatieMediaLibraryImageColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Carbon;
 
 class OrderResource extends Resource
 {
@@ -24,16 +30,32 @@ class OrderResource extends Resource
     protected static ?string $model = Order::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-collection';
-
+    protected static function getNavigationBadge(): ?string
+    {
+        return static::$model::where('status', 'pending')->count();
+    }
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\BelongsToSelect::make('customer_id')
-                ->relationship('customer', 'name')
-                    ->label('Müştəri adı')
+                Forms\Components\Select::make('customer_id')
+                    ->relationship('customer', 'name')
                     ->searchable()
-                    ->placeholder('Müştərini Seçin'),
+                    ->required()
+                    ->label('Müştəri adı')
+                    ->placeholder('Müştərini Seçin')
+                    ->createOptionForm([
+                        Forms\Components\TextInput::make('name')
+                            ->required(),
+                        Forms\Components\TextInput::make('phone'),
+                    ])
+                    ->createOptionAction(function (Forms\Components\Actions\Action $action) {
+                        return $action
+                            ->modalHeading('Müştəri yarat')
+                            ->modalButton('Create customer')
+                            ->modalWidth('lg');
+                    }),
+
 
                 TextInput::make('total')
                     ->label('Sifarişin Qiyməti')
@@ -75,10 +97,12 @@ class OrderResource extends Resource
             ->columns([
                 TextColumn::make('date')
                     ->label('Tarix')
-                    ->date(),
+                    ->date()
+                    ->toggleable(),
                 TextColumn::make('customer.name')
                     ->label('Müştəri adı')
-                    ->searchable(),
+                    ->searchable()
+                    ->toggleable(),
                 Tables\Columns\SelectColumn::make('status')
                     ->label('Statusu')
                     ->options([
@@ -86,30 +110,82 @@ class OrderResource extends Resource
                         'pending' => 'pending',
                         'rejected' => 'rejected',
                         'canceled' => 'canceled',
-                    ])->sortable(),
+                    ])
+                    ->sortable()
+                    ->toggleable(),
                 TextColumn::make('id')
                     ->label('Sifariş kodu')
-                    ->searchable(),
+                    ->searchable()
+                    ->toggleable(),
+                TextColumn::make('total')
+                    ->label('Qiymət')
+                    ->searchable()
+                    ->toggleable(),
                 TextColumn::make('created_at')
                     ->label('Sifarişin tarixi')
                     ->dateTime('d-M-Y h:m')
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(),
                 TextColumn::make('updated_at')
                     ->label('Dəyişmə vaxtı')
                     ->dateTime('d-M h:m')
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(),
                 TextColumn::make('customer.phone')
                     ->label('Əlaqə')
-                    ->searchable(),
+                    ->searchable()
+                    ->toggleable(),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('status')
+                SelectFilter::make('status')
                     ->options([
-                        'pending' => 'Pending',
-                        'approved' => 'Approved',
-                        'rejected' => 'Rejected',
-                        'canceled' => 'Canceled',
+                        'pending' => 'pending',
+                        'approved' => 'approved',
                     ]),
+                Filter::make('created_at')
+                    ->form([
+                        DatePicker::make('created_from'),
+                        DatePicker::make('created_until'),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['created_from'],
+                                fn(Builder $query, $date): Builder => $query->whereDate('created_at', '>=', $date),
+                            )
+                            ->when(
+                                $data['created_until'],
+                                fn(Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date),
+                            );
+                    }),
+
+                Filter::make('date')
+                    ->form([
+                        DatePicker::make('delivered_from'),
+                        DatePicker::make('delivered_until'),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['delivered_from'],
+                                fn(Builder $query, $date): Builder => $query->whereDate('date', '>=', $date),
+                            )
+                            ->when(
+                                $data['delivered_until'],
+                                fn(Builder $query, $date): Builder => $query->whereDate('date', '<=', $date),
+                            );
+                    })
+                    ->indicateUsing(function (array $data): array {
+                        $indicators = [];
+                        if ($data['delivered_from'] ?? null) {
+                            $indicators['delivered_from'] = 'Order from ' . Carbon::parse($data['delivered_from'])->toFormattedDateString();
+                        }
+                        if ($data['delivered_until'] ?? null) {
+                            $indicators['delivered_until'] = 'Order until ' . Carbon::parse($data['delivered_until'])->toFormattedDateString();
+                        }
+
+                        return $indicators;
+                    }),
 
             ])
             ->actions([
@@ -117,7 +193,13 @@ class OrderResource extends Resource
             ])
 
             ->bulkActions([
-                Tables\Actions\DeleteBulkAction::make(),
+                Tables\Actions\DeleteBulkAction::make()
+                    ->action(function () {
+                        Notification::make()
+                            ->title('Now, now, don\'t be cheeky, leave some records for others to play with!')
+                            ->warning()
+                            ->send();
+                    }),
                 Tables\Actions\ForceDeleteBulkAction::make(),
                 Tables\Actions\RestoreBulkAction::make(),
             ]);
@@ -129,7 +211,12 @@ class OrderResource extends Resource
             //
         ];
     }
-
+    public static function getWidgets(): array
+    {
+        return [
+            TotalOrdersWidget::class,
+        ];
+    }
     public static function getPages(): array
     {
         return [
@@ -149,7 +236,28 @@ class OrderResource extends Resource
             ]);
     }
 
-    protected static ?string $pluralModelLabel = 'Sifarişlər';
+    protected static ?string $pluralModelLabel = 'Daxili Sifarişlər';
 
+    protected function getTableFilters(): array
+    {
+        return [
 
+            Filter::make('created_at')
+                ->form([
+                    DatePicker::make('created_from'),
+                    DatePicker::make('created_until'),
+                ])
+                ->query(function (Builder $query, array $data): Builder {
+                    return $query
+                        ->when(
+                            $data['created_from'],
+                            fn(Builder $query, $date): Builder => $query->whereDate('created_at', '>=', $date),
+                        )
+                        ->when(
+                            $data['created_until'],
+                            fn(Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date),
+                        );
+                })
+        ];
+    }
 }

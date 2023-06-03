@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\CustomerResource\Pages;
 use App\Filament\Resources\CustomerResource\RelationManagers;
 use App\Models\Customer;
+use App\Models\Order;
 use Filament\Forms;
 use Filament\Resources\Form;
 use Filament\Resources\Resource;
@@ -19,7 +20,10 @@ class CustomerResource extends Resource
     protected static ?string $model = Customer::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-collection';
-
+    protected static function getNavigationBadge(): ?string
+    {
+        return static::$model::count();
+    }
     public static function form(Form $form): Form
     {
         return $form
@@ -42,8 +46,16 @@ class CustomerResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name')->searchable(),
+                Tables\Columns\TextColumn::make('name')->searchable()
+                ->counts('orders'),
                 //Tables\Columns\TextColumn::make('phone')->count('orders'),
+                Tables\Columns\TextColumn::make('Customer Orders count')
+                    ->label('Sifarişləri')
+                    ->getStateUsing(function(Customer $record) {
+                        // return whatever you need to show
+                        return $record->orders()->count();
+                    })
+                ,
                 Tables\Columns\TextColumn::make('phone')->searchable(),
             ])
             ->filters([
