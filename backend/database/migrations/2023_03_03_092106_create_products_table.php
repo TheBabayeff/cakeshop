@@ -15,8 +15,6 @@ return new class extends Migration
             $table->id();
             $table->bigInteger('category_id')->unsigned();
             $table->string('name')->index('product_name_index');
-            $table->string('slug')->index('product_slug_index');
-            $table->string('code')->index('product_code_index');
             $table->text('description')->nullable();
             $table->double('price')->default(0);
             $table->foreign('category_id')->references('id')->on('categories');

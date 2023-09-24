@@ -1,0 +1,5 @@
+{
+    "require": {
+        "filament/spatie-laravel-tags-plugin": "3.0-stable"
+    }
+}

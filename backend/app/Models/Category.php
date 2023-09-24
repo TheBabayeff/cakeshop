@@ -15,7 +15,7 @@ class Category extends Model implements HasMedia
 
     protected $with = ['media'];
 
-    protected $fillable = ['name', 'slug', 'description'];
+    protected $fillable = ['name', 'slug', 'description', 'image'];
 
     protected $appends = ['primaryMediaUrl'];
 
